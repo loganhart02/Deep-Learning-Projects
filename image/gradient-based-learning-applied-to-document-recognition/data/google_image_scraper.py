@@ -19,8 +19,9 @@ from tqdm import tqdm
 
 #TODO: pipeline the for loops and use multi processing to speed up the searching and downloading. probably need to just do async requests idk. 
 def scrape_images(query, num_images, output_path, num_processes):
+    """Need to have google chrome installed and the chrome driver installed."""
+    
     print("setting up web scraper...")
-
     # Set up Chrome options for headless mode
     chrome_options = Options()
     chrome_options.add_argument('--headless')  # Run in headless mode (no GUI)
@@ -60,7 +61,7 @@ def scrape_images(query, num_images, output_path, num_processes):
             elif "https://" in img_url:
                 img_data = requests.get(img_url).content # downloads the image
 
-            with open(f"{output_path}/cat_{num}.jpg", "wb") as file:
+            with open(f"{output_path}/img_{num}.jpg", "wb") as file:
                 file.write(img_data)
                 
     
