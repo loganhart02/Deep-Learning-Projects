@@ -10,7 +10,7 @@ Here is the machine I used to train all these models
 - editor: VScode
 ## Papers in repo
 ### Image
-  - Gradient-based learning applied to document recognition: https://ieeexplore.ieee.org/document/726791
+  - Gradient-based learning applied to document recognition(lenet5): https://ieeexplore.ieee.org/document/726791
 ### Audio
 ### Text
 ### Video
