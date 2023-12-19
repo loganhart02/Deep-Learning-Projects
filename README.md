@@ -8,7 +8,7 @@ Here is the machine I used to train all these models
 - cpu: threadripper 1920x
 - gpu: duel RTX 3090s
 - ram: 120 Gbs of DDR4(rgb to make faster)
-- os: Ubuntu 22.04 LTS
+- os: Ubuntu 22.04 LTS/20.04 LTS
 - editor: VScode
 ## Papers in repo
 ### Image
