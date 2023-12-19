@@ -64,11 +64,11 @@ def check_data_loader(loader):
 def get_transforms():
     transforms = v2.Compose([
         v2.Grayscale(num_output_channels=1),
-        v2.Resize((224, 224)),  
+        v2.Resize((224, 224)),  # orig paper uses 32×32 images 
         v2.RandomHorizontalFlip(p=0.5),
         v2.ToTensor(),
         v2.ToDtype(torch.float32, scale=True),  
         v2.Normalize(mean=[0.485], std=[0.229]), 
-       #  v2.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) if you change to rgb img use this
+       #  v2.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) if you change to 3 channel images use this
     ])
     return transforms

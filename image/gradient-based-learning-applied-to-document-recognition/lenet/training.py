@@ -46,6 +46,7 @@ def train_animal_classifier(
     train_dl, test_dl = get_data_loaders(train_ds, test_ds, batch_size=batch_size)
     
     net = Lenet5(img_channels=1, num_classes=5, activation="relu")
+    net.load_state_dict(torch.load(model_weights))
     net = net.to(device)
     
     criterion, optimizer = get_loss_optimizer(net, learning_rate, momentum)
