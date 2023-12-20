@@ -46,7 +46,8 @@ def train_animal_classifier(
     train_dl, test_dl = get_data_loaders(train_ds, test_ds, batch_size=batch_size)
     
     net = Lenet5(img_channels=1, num_classes=5, activation="relu")
-    net.load_state_dict(torch.load(model_weights))
+    if model_weights is not None:
+        net.load_state_dict(torch.load(model_weights))
     net = net.to(device)
     
     criterion, optimizer = get_loss_optimizer(net, learning_rate, momentum)
@@ -95,7 +96,7 @@ def train_animal_classifier(
         
         if test_acc > best_test_acc:
             best_test_acc = test_acc
-            torch.save(net.state_dict(), "best_model.pth")
+            torch.save(net.state_dict(), "models/best_model_ac.pth")
             print(f'Epoch {epoch+1}: New best model saved with accuracy: {test_acc:.4f}')
         
         writer.add_scalar('Test Loss', test_loss, epoch)
@@ -206,6 +207,7 @@ if __name__ == "__main__":
     parser.add_argument("--learning-rate", type=float, default=1e-3)
     parser.add_argument("--momentum", type=float, default=0.9)
     parser.add_argument("--device", type=str, default="cuda")
+    parser.add_argument("--model-weights", type=str, default=None)
     parser.add_argument("--train-cifar10", type=bool, default=False, help="train cifar10 instead of animal classifier. use to debug/check model")
     
     args = parser.parse_args()
@@ -227,7 +229,8 @@ if __name__ == "__main__":
             args.batch_size,
             args.learning_rate,
             args.momentum,
-            args.device
+            args.device,
+            args.model_weights
         )
     
 
