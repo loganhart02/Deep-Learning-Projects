@@ -1,11 +1,9 @@
 import os
 import torch
-from glob import glob
 import pandas as pd
 from torchvision.io import read_image
 from torchvision.transforms import v2, Lambda
-from torch.utils.data import Dataset
-from torch.utils.data import DataLoader
+from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 
 
