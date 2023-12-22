@@ -3,7 +3,8 @@ import torch
 import torchvision
 from torch.utils.tensorboard import SummaryWriter
 
-from image.Alexnet.trainer_utils import get_accuracy
+from image.Alexnet.utils import get_accuracy
+
 
 
 class PopularTrainers:
