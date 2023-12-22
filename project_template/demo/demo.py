@@ -1,0 +1,1 @@
+# demo app can be gradio demo, flask.fastapi app, docker container, etc. I'll do different methods in different projects
