@@ -13,7 +13,7 @@ Here is the machine I used to train all these models
 ## Papers in repo
 ### Image
   - Gradient-based learning applied to document recognition(lenet5): https://ieeexplore.ieee.org/document/726791
-  - ImageNet Classification with Deep Convolutional Neural Networks (AlexNet)" by Alex Krizhevsky et al. (2012)
+  - ImageNet Classification with Deep Convolutional Neural Networks (AlexNet)" by Alex Krizhevsky et al. (2012): https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf
   - "Very Deep Convolutional Networks for Large-Scale Image Recognition (VGGNet)" by Karen Simonyan and Andrew Zisserman (2014)
   - "Going Deeper with Convolutions (GoogLeNet/Inception)" by Christian Szegedy et al. (2014)
   - "Deep Residual Learning for Image Recognition (ResNet)" by Kaiming He et al. (2015)
