@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 
 
-
 class AlexNet(nn.Module):
     """
         - Introduces using relu activation
@@ -10,7 +9,6 @@ class AlexNet(nn.Module):
               they use k=2, n=5, a=10^-4, B=0.75:: n is the layer size
         - normalization is applied after relu in certain layers
         - uses softmax to create prob. distribution
-        
     """
     def __init__(self, img_channels: int=3, num_classes: int = 1000, dropout: float = 0.5):
         super(AlexNet, self).__init__()
