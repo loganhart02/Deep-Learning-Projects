@@ -14,12 +14,17 @@ class PopularTrainers:
         self, 
         model, 
         img_transforms, 
+        test_transforms,
         batch_size, 
         epochs, 
         loss_func, 
         optimizer, 
         device,
-        num_workers=2
+        lr_scheduler=None,
+        num_workers=2,
+        tensorboard_dir="./runs",
+        model_dir="./models",
+        log_interval=100,  # Log every 10 steps by default
     ):
         self.model = model
         self.batch_size = batch_size
@@ -28,10 +33,18 @@ class PopularTrainers:
         self.loss_func = loss_func
         self.optimizer = optimizer
         self.transform = img_transforms
+        self.test_transform = test_transforms
+        self.lr_scheduler = lr_scheduler
         self.num_workers = num_workers
+        self.writer = SummaryWriter(tensorboard_dir)
+        self.model_dir = model_dir
+        self.log_interval = log_interval
         
-    def generic_training_loop(self, train_dl, test_dl, writer):
+        
+    def generic_training_loop(self, train_dl, test_dl):
         """generic training loop for all datasets needs improvement"""
+        best_test_acc = 0.0
+
         for epoch in range(self.epochs):
             self.model.train()
             running_loss = 0.0
@@ -53,15 +66,14 @@ class PopularTrainers:
             epoch_loss = running_loss / len(train_dl)
             epoch_acc = running_acc / len(train_dl)
             
-            writer.add_scalar('Training Loss', epoch_loss, epoch)
-            writer.add_scalar('Training Accuracy', epoch_acc, epoch)
+            self.writer.add_scalar('Training Loss', epoch_loss, epoch)
+            self.writer.add_scalar('Training Accuracy', epoch_acc, epoch)
             
             
             # eval model
             self.model.eval()
             test_loss = 0.0
             test_acc = 0.0
-            best_test_acc = 0.0
             with torch.no_grad():
                 for inputs, labels in test_dl:
                     inputs, labels = inputs.to(self.device), labels.to(self.device)
@@ -70,24 +82,26 @@ class PopularTrainers:
                     test_loss += loss.item()
                     test_acc += get_accuracy(outputs, labels)
             
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.step()
+            
             test_loss /= len(test_dl)
             test_acc /= len(test_dl)
             
             if test_acc > best_test_acc:
                 best_test_acc = test_acc
-                torch.save(self.model.state_dict(), "models/best_model.pth")
-                print(f'Epoch {epoch+1}: New best model saved with accuracy: {test_acc:.4f}')
+                torch.save(self.model.state_dict(), f"{self.model_dir}/best_model_{best_test_acc:.4f}.pth")
+                print(f'New best model saved with accuracy: {test_acc:.4f}')
             
-            writer.add_scalar('Test Loss', test_loss, epoch)
-            writer.add_scalar('Test Accuracy', test_acc, epoch)
+            self.writer.add_scalar('Test Loss', test_loss, epoch)
+            self.writer.add_scalar('Test Accuracy', test_acc, epoch)
     
             print(f'Epoch {epoch+1}/{self.epochs}, Train Loss: {epoch_loss:.4f}, Train Accuracy: {epoch_acc:.4f}, '
                   f'Test Loss: {test_loss:.4f}, Test Accuracy: {test_acc:.4f}')
         
-        writer.close()
+        self.writer.close()
         
     def train_cifar10(self, path_to_store_data="./data"):
-        writer = SummaryWriter()
         trainset = torchvision.datasets.CIFAR10(
             root=path_to_store_data, 
             train=True,
@@ -98,7 +112,7 @@ class PopularTrainers:
             root=path_to_store_data, 
             train=False,
             download=True, 
-            transform=self.transform
+            transform=self.test_transform
         )
         train_dl = torch.utils.data.DataLoader(
             trainset, 
@@ -117,5 +131,5 @@ class PopularTrainers:
                 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
         print(f"there are {len(classes)} classes in cifar10")
         print(f"classes are {classes}")
-        self.generic_training_loop(train_dl, test_dl, writer=writer)
+        self.generic_training_loop(train_dl, test_dl)
 
