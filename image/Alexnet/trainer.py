@@ -114,8 +114,12 @@ class ImageClassificationTrainer:
     
     def run_test(self, num_images: int = 5):
         transform = v2.Compose([
-            v2.Resize((224, 224)), # Adjust according to your model's requirements
-            v2.ToTensor()
+            v2.Resize(256, antialias=True), # Adjust according to your model's requirements
+            v2.ToTensor(),
+            v2.Normalize(
+                mean=[0.485, 0.456, 0.406], 
+                std=[0.229, 0.224, 0.225]
+            )
         ])
         self.model.eval()
         image_files = os.listdir(self.test_dir)
