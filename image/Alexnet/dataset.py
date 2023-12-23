@@ -7,22 +7,36 @@ from PIL import Image
 
 
 
-def get_transforms():
+def get_transforms(test_dataset=False):
         """These are all the transforms they use in the alexnet paper"""
-        return v2.Compose(
-            [
-                v2.Resize(256, antialias=True),
-                v2.CenterCrop(224),
-                v2.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  # ColorJitter added here works similar to PCA augment in paper
-                v2.RandomHorizontalFlip(p=0.5),
-                v2.ToImage(),
-                v2.ToDtype(torch.float32, scale=True),
-                v2.Normalize(
-                    mean=[0.485, 0.456, 0.406], 
-                    std=[0.229, 0.224, 0.225]
-                ),
-            ]
-        )
+        if test_dataset:
+            return v2.Compose(
+                [
+                    v2.Resize(256, antialias=True),
+                    v2.CenterCrop(224),
+                    v2.ToImage(),
+                    v2.ToDtype(torch.float32, scale=True),
+                    v2.Normalize(
+                        mean=[0.485, 0.456, 0.406], 
+                        std=[0.229, 0.224, 0.225]
+                    ),
+                ]
+            )
+        else:
+            return v2.Compose(
+                [
+                    v2.Resize(256, antialias=True),
+                    v2.CenterCrop(224),
+                    v2.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  # ColorJitter added here works similar to PCA augment in paper
+                    v2.RandomHorizontalFlip(p=0.5),
+                    v2.ToImage(),
+                    v2.ToDtype(torch.float32, scale=True),
+                    v2.Normalize(
+                        mean=[0.485, 0.456, 0.406], 
+                        std=[0.229, 0.224, 0.225]
+                    ),
+                ]
+            )
 
 
 class ImageNetDataset(Dataset):
@@ -30,12 +44,9 @@ class ImageNetDataset(Dataset):
     csv file should have two columns: image_path, label with sep="|"
     image_path should be entire path to image
     """
-    def __init__(self, csv_file):
+    def __init__(self, csv_file, test_dataset=False):
         self.data = pd.read_csv(csv_file, sep="|")
-        self.img_transforms = get_transforms()
-        self.label_transform = Lambda(lambda y: torch.zeros(
-            1000, dtype=torch.float).scatter_(dim=0, index=torch.tensor(y), value=1))
-        
+        self.img_transforms = get_transforms(test_dataset=test_dataset)
         self._create_label_map()
         
     def _create_label_map(self):
@@ -52,8 +63,6 @@ class ImageNetDataset(Dataset):
         img = read_image(img_path)
         label = self.label_map[self.data.iloc[idx, 1]] # label is second column
         img = self.img_transforms(img)
-
-        label = self.label_transform(label)
         return img, label
 
     
