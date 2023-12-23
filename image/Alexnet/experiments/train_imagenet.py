@@ -7,7 +7,7 @@ from dataset import ImageNetDataset
 from trainer import ImageClassificationTrainer
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 batch_size = 1024
 epochs = 100
@@ -18,9 +18,9 @@ num_workers = 8
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 train_set = ImageNetDataset("/media/logan/m.2/datasets/image/imagenet-dataset/2010/train.csv")
-test_set = ImageNetDataset("/media/logan/m.2/datasets/image/imagenet-dataset/2010/eval.csv")
+test_set = ImageNetDataset("/media/logan/m.2/datasets/image/imagenet-dataset/2010/eval.csv", test_dataset=True)
 
-model = AlexNet(num_classes=1000)
+model = AlexNet(num_classes=49)
 model.to(device)
 
 loss_func, optimizer = get_loss_optimizer(model, lr, momentum, weight_decay)
