@@ -4,7 +4,7 @@ import random
 import torch
 from torchvision.transforms import v2
 from torch.utils.tensorboard import SummaryWriter
-from utils import get_accuracy
+from Alexnet.utils import get_accuracy
 from PIL import Image, ImageDraw, ImageFont 
 
 
@@ -23,6 +23,7 @@ class ImageClassificationTrainer:
         optimizer, 
         device, 
         num_workers=2,
+        lr_schedular=None,
         tensorboard_dir="./runs",
         model_dir="./models",
         log_interval=100,  # Log every 10 steps by default
@@ -40,6 +41,7 @@ class ImageClassificationTrainer:
         self.writer = SummaryWriter(tensorboard_dir)
         self.model_dir = model_dir
         self.log_interval = log_interval
+        self.lr_schedular = lr_schedular
         
     def _get_dataloaders(self):
         self.train_dl = torch.utils.data.DataLoader(
@@ -107,7 +109,7 @@ class ImageClassificationTrainer:
         test_loss, test_acc = self.eval_one_step()
         if test_acc > best_test_acc:
             best_test_acc = test_acc
-            torch.save(self.model.state_dict(), f"{self.model_dir}/best_model_{best_test_acc}.pth")
+            torch.save(self.model.state_dict(), f"{self.model_dir}/best_model_{best_test_acc:.4f}.pth")
             print(f'New best model saved with accuracy: {test_acc:.4f}')
         return test_loss, test_acc, best_test_acc
     
@@ -148,6 +150,8 @@ class ImageClassificationTrainer:
             train_loss, train_acc = self.train_one_epoch()
             test_loss, test_acc, best_test_acc = self.eval_one_epoch(best_test_acc)
             self.run_test()
+            if self.lr_schedular is not None:
+                self.lr_schedular.step()
             
             self.writer.add_scalar('Training Loss', train_loss, epoch)
             self.writer.add_scalar('Training Accuracy', train_acc, epoch)
