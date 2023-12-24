@@ -1,4 +1,5 @@
 import torch
+import onnx
 import torch.nn as nn
 
 
@@ -10,7 +11,7 @@ class AlexNet(nn.Module):
         - normalization is applied after relu in certain layers
         - uses softmax to create prob. distribution
     """
-    def __init__(self, img_channels: int=3, num_classes: int = 1000, dropout: float = 0.5):
+    def __init__(self, img_channels: int=3, num_classes: int = 1000, dropout: float = 0.5, pretrained: bool = False, weights_path: str = None):
         super(AlexNet, self).__init__()
         self.conv_layers = nn.Sequential(
             nn.Conv2d(img_channels, 96, kernel_size=11, stride=4, padding=2),
@@ -42,12 +43,44 @@ class AlexNet(nn.Module):
             nn.Linear(4096, num_classes)
         )
         
+        if pretrained is True:
+            assert weights_path is not None, "weights_path must be provided if pretrained is True"
+            self.load_pretrained(path_to_weights=weights_path)
+            
+        
+    def load_pretrained(self, path_to_weights: str):
+        self.load_state_dict(torch.load(path_to_weights))
+        
     def forward(self, x):
         x = self.conv_layers(x)
         x = self.avgpool(x)
         x = torch.flatten(x, 1) # flatten everything but batch
         x = self.classifier(x)
         return x
+        
+        
+        
+class ModelExporter:
+    def __init__(self, model, output_path):
+        self.model = model
+        self.input_shape = (1, 3, 224, 224)
+        self.output_path = output_path
+        
+    def export(self):
+        self.model.eval()
+        dummy_input = torch.randn(self.input_shape)
+        onnx_program = torch.onnx.dynamo_export(self.model, dummy_input)
+        onnx_program.save(self.output_path)
+        
+        print("Exported model to ", self.output_path)
+        
+        print("Testing exported model...")
+        try:
+            onnx_model = onnx.load(self.output_path)
+            onnx.checker.check_model(onnx_model)
+            print("Exported model passed testing")
+        except:
+            print("Exported model failed testing")
         
         
         
