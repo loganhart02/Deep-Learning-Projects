@@ -1,2 +1,3 @@
-# Project Template
-just a basic outline of how to structure each different ML project
+# ImageNet Classification with Deep Convolutional Neural Networks
+- If you plan to run any training scripts set your python path properly
+- uses same environment as lenet
