@@ -1,7 +1,7 @@
 # Deep Learning Paper Implementations
 **originally made this back in 2021 for myself currently updating the code for all my papers and publishing them as I get them working**
 
-just a repo of deep learning papers I implemented just to practice implementing and reading/understanding deep learning papers. Every model I train will have a demo you can load up locally to test/try models. this is pretty much my main repo to practicing build ML pipelines from data collection to MLops. 
+just a repo of deep learning papers I implemented just to practice implementing and reading/understanding deep learning papers. Every model I train will have a demo you can load up locally to test/try models. this is pretty much my main repo to practicing build ML pipelines from data collection to MLops. Each model has it's own branch 
 
 ## machine setup
 Here is the machine I used to train all these models
