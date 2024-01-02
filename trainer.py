@@ -7,7 +7,24 @@ from torchvision.transforms import v2
 from PIL import Image, ImageDraw
 from torch.utils.tensorboard import SummaryWriter
 
-from utils import get_accuracy
+
+def get_loss_optim(model, device, lr=1e-2, momentum=0.9, weight_decay=5e-4):
+    "same as in the vgg16 paper default values are what they use in paper"
+    losd_func = torch.nn.CrossEntropyLoss().to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+    return losd_func, optimizer
+
+
+def get_accuracy(output, target):
+    preds = torch.argmax(output, dim=1)  # get the highest probability prediction for each item in the batch
+    try:
+        target_indices = torch.argmax(target, dim=1)  # convert one-hot encoded target to class indices
+        correct = (preds == target_indices).sum().item()
+        acc = correct / len(target)
+    except:
+        correct = (preds == target).sum().item()
+        acc = correct / len(target)
+    return acc
 
 
 class Trainer:    
@@ -31,7 +48,7 @@ class Trainer:
         log_interval=100,  # Log every 10 steps by default
     ):
         self.model = model
-        self.batch_size = batch_size
+        self.bs = batch_size
         self.trainset = trainset
         self.testset = evalset
         self.test_directory = test_directory
@@ -81,8 +98,8 @@ class Trainer:
             running_acc += get_accuracy(outputs, labels)
             
             if (i + 1) % self.log_interval == 0:
-                print(f'Step {i + 1}, Loss: {running_loss / (i + 1):.4f}, '
-                        f'Accuracy: {running_acc / (i + 1):.4f}')
+                print(
+                f"""\nStep {i + 1} out of {len(self.trainset) // self.bs}\nLoss: {running_loss / (i + 1):.4f}\nAccuracy: {running_acc / (i + 1):.4f}""")
         return running_loss, running_acc
     
     def eval_one_step(self):
@@ -141,13 +158,14 @@ class Trainer:
             label = self.trainset.num_to_label[prediction]
             self.add_image_with_text(f'Image_{i}', input_tensor.squeeze(0), label, 0)
             
-    def fit(self):
+    def fit(self, run_test: bool = True):
         best_test_acc = 0.0
         self._get_dataloaders()
         for epoch in range(self.epochs):
             train_loss, train_acc = self.train_one_epoch()
             test_loss, test_acc, best_test_acc = self.eval_one_epoch(best_test_acc)
-            self.run_test()
+            if run_test:
+                self.run_test()
             if self.lr_schedular is not None:
                 self.lr_schedular.step()
             
@@ -195,13 +213,13 @@ class Trainer:
         )
         self.train_dl = torch.utils.data.DataLoader(
             self.trainset, 
-            batch_size=self.batch_size,
+            batch_size=self.bs,
             shuffle=True, 
             num_workers=self.num_workers
         )
         self.test_dl = torch.utils.data.DataLoader(
             self.testset, 
-            batch_size=self.batch_size,
+            batch_size=self.bs,
             shuffle=False, 
             num_workers=self.num_workers,
         )
@@ -210,4 +228,4 @@ class Trainer:
                 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
         print(f"there are {len(classes)} classes in cifar10")
         print(f"classes are {classes}")
-        self.fit()
+        self.fit(run_test=False)
