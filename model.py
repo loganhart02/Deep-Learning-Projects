@@ -34,7 +34,7 @@ class Vgg16(nn.Module):
             nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2, stride=2),
-            nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
             nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
@@ -53,7 +53,8 @@ class Vgg16(nn.Module):
             nn.ReLU(inplace=True),
             nn.Dropout(0.5),
             nn.Linear(4096, num_classes),
-            # nn.Softmax(dim=1) I am using crossentropy loss so it does this internally but you need to use this at inference. paper shows it so I add
+            # I am using crossentropy loss so it does this internally but you need to use this at inference. paper shows it so I add
+            # nn.Softmax(dim=1)
         )
         
     def forward(self, x):
@@ -63,7 +64,7 @@ class Vgg16(nn.Module):
         return x
     
     def get_num_params(self):
-        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+        print(f" model has {sum(p.numel() for p in self.parameters() if p.requires_grad)} parameters")
         
     
     
