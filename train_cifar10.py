@@ -1,12 +1,8 @@
-import os
 import torch
-from model import Vgg16
+from model import Vgg19
 from torchvision import transforms as v2
 from trainer import Trainer, get_loss_optim
 from dataset import transforms
-
-
-
 
 
 batch_size = 256
@@ -16,11 +12,11 @@ num_workers = 8
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-vgg16 = Vgg16(img_channels=3, num_classes=10).to(device)
+vgg16 = Vgg19(img_channels=3, num_classes=10).to(device)
 
 l, o = get_loss_optim(vgg16, device, lr=lr)
 
-img_normalize = v2.Normalize((0.5,), (1.0))
+img_normalize = v2.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 img_transforms = transforms(normalize_transforms=img_normalize)
 
 
