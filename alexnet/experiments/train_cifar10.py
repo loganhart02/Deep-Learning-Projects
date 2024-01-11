@@ -1,9 +1,9 @@
 import os
 import torch
-from image.generic_trainers import PopularTrainers
-from image.Alexnet.utils import get_loss_optimizer
-from image.Alexnet.model import AlexNet
-from image.Alexnet.dataset import get_transforms
+from Image.generic_trainers import PopularTrainers
+from Image.Alexnet.utils import get_loss_optimizer
+from Image.Alexnet.model import AlexNet
+from Image.Alexnet.dataset import get_transforms
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 

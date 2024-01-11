@@ -4,7 +4,7 @@ import onnxruntime
 import gradio as gr
 from torchvision.transforms import v2
 
-from model import AlexNet
+from Image.Models.AlexNet.model import AlexNet
 
 
 if __name__ == "__main__":
