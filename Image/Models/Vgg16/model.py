@@ -1,6 +1,21 @@
 import torch
 import torch.nn as nn
+from torchvision.transforms import v2
+
     
+    
+def transforms(normalize_transforms: v2.Normalize = None):
+    transforms = [
+        v2.RandomResizedCrop(224, antialias=True),
+        v2.RandomHorizontalFlip(),
+        v2.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1),
+        v2.ToImage(),
+        v2.ToDtype(torch.float32, scale=True),
+    ]
+    if normalize_transforms:
+        transforms.append(normalize_transforms)
+    return v2.Compose(transforms)
+
 
 class Vgg19(nn.Module):
     def __init__(self, img_channels: int = 3, num_classes: int = 1000):

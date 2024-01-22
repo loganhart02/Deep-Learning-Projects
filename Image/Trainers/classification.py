@@ -1,15 +1,29 @@
-"""File contains trainers for mnist, imagenet, cifar10, cifar100"""
 import torch
 import torchvision
 from torch.utils.tensorboard import SummaryWriter
 
-from utils import get_accuracy
 
 
+def get_loss_optim(model, device, lr=1e-2, momentum=0.9, weight_decay=5e-4):
+    "same as in the vgg16 paper default values are what they use in paper"
+    losd_func = torch.nn.CrossEntropyLoss().to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+    return losd_func, optimizer
 
-class PopularTrainers:
-    """class containing code to train image models on popular datasets like mnist and cifar10"""
-    
+
+def get_accuracy(output, target):
+    preds = torch.argmax(output, dim=1)  # get the highest probability prediction for each item in the batch
+    try:
+        target_indices = torch.argmax(target, dim=1)  # convert one-hot encoded target to class indices
+        correct = (preds == target_indices).sum().item()
+        acc = correct / len(target)
+    except:
+        correct = (preds == target).sum().item()
+        acc = correct / len(target)
+    return acc
+
+
+class ImageClassificationTrainer:    
     def __init__(
         self, 
         model, 
@@ -44,6 +58,7 @@ class PopularTrainers:
     def generic_training_loop(self, train_dl, test_dl):
         """generic training loop for all datasets needs improvement"""
         best_test_acc = 0.0
+        global_step = 0  # Initialize a counter for global steps
 
         for epoch in range(self.epochs):
             self.model.train()
@@ -62,6 +77,12 @@ class PopularTrainers:
                 
                 running_loss += loss.item()
                 running_acc += get_accuracy(outputs, labels)
+
+                global_step += 1  # Increment the global step counter
+
+                # Print current step in epoch and global step count
+                if global_step % self.log_interval == 0:
+                    print(f"Epoch {epoch+1}/{self.epochs} -- Step {i+1}/{len(train_dl)} -- Global Step {global_step}\nLoss: {loss.item():.4f}\nAccuracy: {get_accuracy(outputs, labels):.4f}")
             
             epoch_loss = running_loss / len(train_dl)
             epoch_acc = running_acc / len(train_dl)
@@ -75,12 +96,18 @@ class PopularTrainers:
             test_loss = 0.0
             test_acc = 0.0
             with torch.no_grad():
-                for inputs, labels in test_dl:
+                for x, (inputs, labels) in enumerate(test_dl):
                     inputs, labels = inputs.to(self.device), labels.to(self.device)
                     outputs = self.model(inputs)
                     loss = self.loss_func(outputs, labels)
                     test_loss += loss.item()
                     test_acc += get_accuracy(outputs, labels)
+                    
+                    global_step += 1  # Increment the global step counter
+
+                    if global_step % self.log_interval == 0:
+                        print(f"Epoch {epoch+1}/{self.epochs} -- Step {x+1}/{len(test_dl)} -- Global Step {global_step}\nLoss: {loss.item():.4f}\nAccuracy: {get_accuracy(outputs, labels):.4f}")
+            
             
             if self.lr_scheduler is not None:
                 self.lr_scheduler.step()
@@ -95,11 +122,12 @@ class PopularTrainers:
             
             self.writer.add_scalar('Test Loss', test_loss, epoch)
             self.writer.add_scalar('Test Accuracy', test_acc, epoch)
-    
-            print(f'Epoch {epoch+1}/{self.epochs}, Train Loss: {epoch_loss:.4f}, Train Accuracy: {epoch_acc:.4f}, '
-                  f'Test Loss: {test_loss:.4f}, Test Accuracy: {test_acc:.4f}')
+
+            print(f'Epoch {epoch+1}/{self.epochs}\nTrain Loss: {epoch_loss:.4f} -- Train Accuracy: {epoch_acc:.4f} -- '
+                f'Test Loss: {test_loss:.4f} -- Test Accuracy: {test_acc:.4f}')
         
         self.writer.close()
+
         
     def train_cifar10(self, path_to_store_data="./data"):
         trainset = torchvision.datasets.CIFAR10(
@@ -132,4 +160,3 @@ class PopularTrainers:
         print(f"there are {len(classes)} classes in cifar10")
         print(f"classes are {classes}")
         self.generic_training_loop(train_dl, test_dl)
-
